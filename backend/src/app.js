@@ -3,6 +3,8 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import { errorHandler } from "./middleware/errorHandler.js";
+import endpointRoutes from "./routes/endpointRoutes.js";
+import alertRoutes from "./routes/alertRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 
 const app = express();
@@ -25,6 +27,8 @@ app.get("/api/health", (req, res) => {
 
 // API routes
 app.use("/api/auth", authRoutes);
+app.use("/api/endpoints", endpointRoutes);
+app.use("/api/alerts", alertRoutes);
 
 // 404 handler
 app.use((req, res) => {
