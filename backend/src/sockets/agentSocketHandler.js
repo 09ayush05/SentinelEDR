@@ -57,7 +57,7 @@ export function registerAgentHandlers(socket, io) {
       });
 
       // Broadcast to dashboard clients
-      io.emit("dashboard:fileEvent", data);
+      io.to("dashboard").emit("dashboard:fileEvent", data);
 
     } catch (error) {
       logger.error("Failed to process file event: " + error.message);
@@ -82,7 +82,7 @@ export function registerAgentHandlers(socket, io) {
         " (score: " + data.riskScore + ")");
 
       // Broadcast alert to all dashboard clients immediately
-      io.emit("dashboard:alert", alert);
+      io.to("dashboard").emit("dashboard:alert", alert);
 
     } catch (error) {
       logger.error("Failed to process alert: " + error.message);

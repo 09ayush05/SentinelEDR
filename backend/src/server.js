@@ -6,7 +6,7 @@ import { connectDatabase } from "./config/database.js";
 import { validateConfig } from "./config/index.js";
 import logger from "./utils/logger.js";
 import { registerAgentHandlers } from "./sockets/agentSocketHandler.js";
-
+import { registerDashboardHandlers } from "./sockets/dashboardSocketHandler.js";
 async function startServer() {
   try {
     validateConfig();
@@ -37,11 +37,8 @@ async function startServer() {
       if (clientType === "agent") {
         registerAgentHandlers(socket, io);
       } else {
-        // Dashboard client connected
         logger.info("Dashboard client connected: " + socket.id);
-        socket.on("disconnect", () => {
-          logger.info("Dashboard client disconnected: " + socket.id);
-        });
+        registerDashboardHandlers(socket, io);
       }
     });
 
