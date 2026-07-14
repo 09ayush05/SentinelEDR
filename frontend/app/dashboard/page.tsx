@@ -3,11 +3,15 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, getStoredUser, clearAuth, type AuthUser } from "@/lib/auth";
+import { useSocket } from "@/hooks/useSocket";
+import EndpointList from "@/components/EndpointList";
+import AlertFeed from "@/components/AlertFeed";
 
 export default function DashboardPage() {
     const router = useRouter();
     const [user, setUser] = useState<AuthUser | null>(null);
     const [checked, setChecked] = useState(false);
+    const { connected, alerts, acknowledgeAlert } = useSocket();
 
     useEffect(() => {
         const token = getToken();
@@ -24,7 +28,6 @@ export default function DashboardPage() {
         router.replace("/login");
     }
 
-    // Avoid flashing dashboard content before the auth check resolves
     if (!checked) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-slate-950">
@@ -48,10 +51,20 @@ export default function DashboardPage() {
                 </div>
             </header>
 
-            <main className="p-6">
-                <p className="text-slate-400">
-                    Auth wired up. Live endpoint list and alert feed land here in the next wave.
-                </p>
+            <main className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-2">
+                <section>
+                    <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400">
+                        Endpoints
+                    </h2>
+                    <EndpointList />
+                </section>
+
+                <section>
+                    <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400">
+                        Alerts
+                    </h2>
+                    <AlertFeed liveAlerts={alerts} connected={connected} onAcknowledge={acknowledgeAlert} />
+                </section>
             </main>
         </div>
     );
