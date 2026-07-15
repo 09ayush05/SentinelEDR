@@ -31,6 +31,7 @@ public class CommunicationModule {
                 .setReconnectionAttempts(Integer.MAX_VALUE)
                 .setReconnectionDelay(1000)
                 .setReconnectionDelayMax(5000)
+                .setQuery("clientType=agent")
                 .build();
 
             socket = IO.socket(URI.create(config.getBackendUrl()), options);
@@ -69,7 +70,7 @@ public class CommunicationModule {
             registration.put("agentVersion", "1.0.0");
             registration.put("osInfo", System.getProperty("os.name") + " " + System.getProperty("os.version"));
             String json = objectMapper.writeValueAsString(registration);
-            socket.emit("agent:register", new JSONObject(json));
+            socket.emit("endpoint:register", new JSONObject(json));
             System.out.println("[CommunicationModule] Registration sent for: " + config.getEndpointId());
         } catch (Exception e) {
             System.err.println("[CommunicationModule] Failed to send registration: " + e.getMessage());
@@ -88,8 +89,12 @@ public class CommunicationModule {
             payload.put("filePath", event.getFilePath());
             payload.put("fileExtension", event.getFileExtension());
             payload.put("fileSizeBytes", event.getFileSizeBytes());
-            payload.put("entropyBefore", event.getEntropyBefore());
-            payload.put("entropyAfter", event.getEntropyAfter());
+            if (event.getEntropyBefore() >= 0) {
+                payload.put("entropyBefore", event.getEntropyBefore());
+            }
+            if (event.getEntropyAfter() >= 0) {
+                payload.put("entropyAfter", event.getEntropyAfter());
+            }
             payload.put("detectedAt", event.getDetectedAt().toString());
             payload.put("riskScore", assessment.getScore());
             payload.put("severity", assessment.getSeverity());
@@ -112,10 +117,12 @@ public class CommunicationModule {
         try {
             Map<String, Object> payload = new HashMap<>();
             payload.put("endpointId", event.getEndpointId());
+            payload.put("hostname", config.getHostname());
             payload.put("filePath", event.getFilePath());
             payload.put("riskScore", assessment.getScore());
             payload.put("severity", assessment.getSeverity());
-            payload.put("reasons", assessment.getReasons());
+            payload.put("title", "Suspicious activity detected: " + event.getEventType() + " on " + event.getFilePath());
+            payload.put("description", String.join("; ", assessment.getReasons()));
             payload.put("detectedAt", event.getDetectedAt().toString());
             String json = objectMapper.writeValueAsString(payload);
             socket.emit("agent:alert", new JSONObject(json));
