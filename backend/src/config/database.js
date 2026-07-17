@@ -3,10 +3,15 @@ import logger from "../utils/logger.js";
 import { config } from "./index.js";
 
 export async function connectDatabase() {
-  await mongoose.connect(config.mongoUri, {
-    serverSelectionTimeoutMS: 3000,
-  });
-  logger.info("MongoDB connected successfully");
+  try {
+    await mongoose.connect(config.mongoUri, {
+      serverSelectionTimeoutMS: 15000,
+    });
+    logger.info("MongoDB connected successfully");
+  } catch (err) {
+    logger.error("MongoDB connection failed: " + err.message);
+    throw err;
+  }
 }
 
 mongoose.connection.on("disconnected", () => {
